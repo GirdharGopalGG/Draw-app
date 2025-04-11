@@ -1,11 +1,34 @@
-import { WebSocketServer } from "ws";
-import jwt from "jsonwebtoken"
+import { WebSocket, WebSocketServer } from "ws";
+import jwt, { JwtPayload } from "jsonwebtoken"
 import {JWT_SECRET} from 'backend-common/config'
+import { SrvRecord } from "dns";
 
 const wss = new WebSocketServer({port:8080})
 
-wss.on('connection',(ws,request)=>{
+interface User {
+    ws:WebSocket
+    rooms:string[]
+    userId:string
+
+}
+
+const users:User[] = [] 
+
+
+function checkUser(token:string):string|null{
+    const decoded = jwt.verify(token,JWT_SECRET as string)
+    if(typeof decoded === 'string')
+        return null
+
+    if(!decoded)
+        return null
     
+    return decoded.userId
+}
+
+
+wss.on('connection',(ws,request)=>{
+        
     const url = request.url
     if(!url){
         return
@@ -13,13 +36,19 @@ wss.on('connection',(ws,request)=>{
 
     const queryParam = new URLSearchParams(url.split('?')[1])
     const token = queryParam.get('token') as string
+    const userId = checkUser(token)
     
-    const decoded = jwt.verify(token,JWT_SECRET)
-
-    if(!decoded){
+    if(!userId){
         ws.close()
         return
     }
+    
+    users.push({
+        ws:ws,
+        rooms:[],
+        userId:userId
+
+    })
     
     ws.on('message',(message)=>{
         ws.send(message)

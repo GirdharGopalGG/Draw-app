@@ -73,7 +73,7 @@ app.post('/signin',async (req,res)=>{
         }
         
         const token = jwt.sign({
-             userId : user?.id
+             userId : user.id
         }
          ,JWT_SECRET as string)
     
