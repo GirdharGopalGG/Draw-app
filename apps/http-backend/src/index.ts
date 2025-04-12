@@ -121,7 +121,30 @@ app.post('/room',middleware,async (req,res)=>{
           
 })
 
-app.post('/chats:roomId',(req,res)=>{
+app.get('/chats/:roomId',async (req,res)=>{
+    const roomId = Number(req.params.roomId)
+    
+    try{
+
+        const chats = await prismaClient.chat.findMany({
+
+            where:{
+                roomId:roomId
+            },
+            orderBy:{
+                id:"desc"
+            },        
+            take:50
+        })
+
+        res.json({
+            chats
+        })
+    }catch(e){
+        res.status(411).json({
+            msg:"error fetching previous chats"
+        })
+    }
     
 })
 
