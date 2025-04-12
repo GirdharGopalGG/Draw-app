@@ -1,6 +1,7 @@
 import { WebSocket, WebSocketServer } from "ws";
 import jwt, { JwtPayload } from "jsonwebtoken"
 import {JWT_SECRET} from 'backend-common/config'
+import {prismaClient} from 'db/client'
 
 const wss = new WebSocketServer({port:8080})
 
@@ -55,7 +56,7 @@ wss.on('connection',(ws,request)=>{
 
     })
     
-    ws.on('message',(message)=>{
+    ws.on('message',async (message)=>{
         
         const parsedData = JSON.parse(message as unknown as string)
         if(parsedData.type === 'join_room'){
@@ -75,6 +76,15 @@ wss.on('connection',(ws,request)=>{
             const roomId = parsedData.roomId
             const msg = parsedData.message
 
+
+            await prismaClient.chat.create({
+                data:{
+                     message:msg,
+                     roomId,
+                     userId
+                }
+            })
+            
             users.forEach(user => {
                 if(user.rooms.includes(roomId)){
                     user.ws.send(JSON.stringify({

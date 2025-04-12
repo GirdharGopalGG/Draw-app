@@ -118,10 +118,12 @@ app.post('/room',middleware,async (req,res)=>{
             msg:"room already exists"
         })
      }
-     
-     
+          
 })
 
+app.post('/chats:roomId',(req,res)=>{
+    
+})
 
 
 app.listen(3001)
