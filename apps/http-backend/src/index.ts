@@ -148,5 +148,30 @@ app.get('/chats/:roomId',async (req,res)=>{
     
 })
 
+app.get('/room/:roomName',async(req,res)=>{
+    const roomName = req.params.roomName
+    try{
+        const room = await prismaClient.room.findFirst({
+        where:{
+            slug:roomName
+        }
+        })
+        if(room===null){
+            res.status(411).json({
+                msg:"room not found"
+            })
+            return
+        }
+        res.json({
+            roomId:room.id
+        })
+    }catch(e){
+        res.status(411).json({
+            msg:"error finding roomId"
+        })
+    }
+    
+})
+
 
 app.listen(3001)
